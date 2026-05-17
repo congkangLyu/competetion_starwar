@@ -1,0 +1,6 @@
+# Development-only dependencies (NOT installed by Kaggle, only used by
+# the local tooling -- build script, evaluation harness, tests).
+#
+# Install with: pip install -r requirements-dev.txt
+
+pyyaml>=6.0    # configs/*.yaml parsing in tools/build_submission.py

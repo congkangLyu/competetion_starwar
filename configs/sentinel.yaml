@@ -1,0 +1,27 @@
+# Sentinel -- blitz scoring + defensive reinforcement enabled.
+#
+# Same offensive policy as blitz, but turns on the defense pass: when an
+# enemy fleet is heading at one of our planets, divert ships from the
+# nearest healthy friendly to top up the garrison.
+
+name: sentinel
+description: |
+  Blitz scoring with defensive reinforcement enabled. Diverts ships
+  from nearby friendlies to top up garrisons under threat.
+
+agent: HeuristicAgent
+
+config:
+  dist_weight: 3.0
+  prod_weight: 0.5
+  weak_weight: 0.0
+  neutral_bonus: 0.0
+  enemy_bonus: 1.0
+  attack_buffer: 1.0
+  min_ships: 1
+  use_defense: true
+  defense_reserve: 5
+  wait_turns: 2
+  consolidate_threshold: 15
+  consolidate_fraction: 0.5
+  max_ships_norm: 500.0

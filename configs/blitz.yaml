@@ -1,0 +1,39 @@
+# Blitz -- the default 72.2% winrate preset from the EDA notebook.
+#
+# Greedy, distance-weighted attack with a mild production-rate preference
+# and a small enemy bonus. No defensive reinforcement. This is the preset
+# currently submitted to Kaggle.
+
+name: blitz
+description: |
+  Distance-weighted greedy attack with a mild production-rate preference.
+  Slight bias toward enemy targets over neutrals. No defense pass.
+  Wins 72.2% of a 10-strategy round-robin in the EDA notebook.
+
+agent: HeuristicAgent
+
+config:
+  # Scoring weights
+  dist_weight: 3.0      # strong preference for nearby targets
+  prod_weight: 0.5      # mild bonus for high-production targets
+  weak_weight: 0.0      # no extra preference for low-garrison targets
+  neutral_bonus: 0.0    # no neutral-vs-enemy bias from this term
+  enemy_bonus: 1.0      # but explicit bonus when target is enemy-owned
+
+  # Attack sizing
+  attack_buffer: 1.0    # send exactly the iterative capture cost
+  min_ships: 1          # any source size can launch
+
+  # Defensive reinforcement
+  use_defense: false
+  defense_reserve: 5
+
+  # Pacing
+  wait_turns: 2         # let the home planet build up for 2 turns
+
+  # Consolidation when no attack target is affordable
+  consolidate_threshold: 15
+  consolidate_fraction: 0.5
+
+  # Normalisers
+  max_ships_norm: 500.0

@@ -1,0 +1,6 @@
+# Runtime dependency (used by the Kaggle env when running games locally)
+kaggle-environments>=1.28.0
+
+# Dev / tooling dependencies (not needed inside the submitted main.py)
+PyYAML>=6.0   ; extra == "dev"  # used by tools/build_submission.py
+pytest>=7.0   ; extra == "dev"  # used by `make pytest`

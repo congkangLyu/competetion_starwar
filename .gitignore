@@ -1,0 +1,20 @@
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Build staging area (we keep main.py at the root, that's the actual submission)
+_build/
+
+# Virtualenvs
+.venv/
+venv/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Replay JSON caches (large, regenerable)
+replays/
+logs/

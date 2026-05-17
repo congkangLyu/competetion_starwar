@@ -1,0 +1,13 @@
+# Sniper -- the original baseline.
+#
+# Greedy nearest-planet attack with `garrison + 1` ships. Kept as a low
+# bar to measure improvements against. Not for submission; for local eval.
+
+name: sniper
+description: |
+  Baseline nearest-planet attacker. No sun avoidance, no transit cost.
+
+agent: SniperAgent
+
+# SniperAgent has no tunable parameters.
+config: {}
