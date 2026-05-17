@@ -143,6 +143,7 @@ def test_compute_elo_draw() -> None:
 # ─── Tournament structure ────────────────────────────────────────────────
 def test_pair_count_and_match_count() -> None:
     """3 agents -> 3 unique pairs * n games each = 3n total matches."""
+    _install_fake_kaggle()
     print("test_pair_count_and_match_count")
     t = run_tournament(
         agents=AGENTS3,
@@ -158,6 +159,7 @@ def test_pair_count_and_match_count() -> None:
 
 def test_winrate_matrix_symmetry() -> None:
     """``pw[a,b] + pw[b,a]`` should equal 1.0 within float tolerance."""
+    _install_fake_kaggle()
     print("test_winrate_matrix_symmetry")
     t = run_tournament(
         agents=AGENTS3,
@@ -176,6 +178,7 @@ def test_winrate_matrix_symmetry() -> None:
 def test_strong_agent_wins() -> None:
     """The fake env's strength table makes alpha > beta > gamma; the
     final leaderboard should reflect that across enough games."""
+    _install_fake_kaggle()
     print("test_strong_agent_wins")
     t = run_tournament(
         agents=AGENTS3,
@@ -190,6 +193,7 @@ def test_strong_agent_wins() -> None:
 
 
 def test_deterministic_with_seed() -> None:
+    _install_fake_kaggle()
     print("test_deterministic_with_seed")
     t1 = run_tournament(AGENTS3, n_games_per_pair=4,
                         base_seed=7, parallel=1)
@@ -202,6 +206,7 @@ def test_deterministic_with_seed() -> None:
 
 
 def test_rejects_duplicate_agents() -> None:
+    _install_fake_kaggle()
     print("test_rejects_duplicate_agents")
     try:
         run_tournament([ALPHA, ALPHA], n_games_per_pair=2,
@@ -213,6 +218,7 @@ def test_rejects_duplicate_agents() -> None:
 
 
 def test_too_few_agents() -> None:
+    _install_fake_kaggle()
     print("test_too_few_agents")
     try:
         run_tournament([ALPHA], n_games_per_pair=2,
@@ -226,6 +232,7 @@ def test_too_few_agents() -> None:
 def test_leaderboard_counts() -> None:
     """Sum of (wins, draws, losses) per agent must equal that agent's
     games column, and must equal (N-1) * n_games_per_pair."""
+    _install_fake_kaggle()
     print("test_leaderboard_counts")
     t = run_tournament(AGENTS3, n_games_per_pair=10,
                        base_seed=11, parallel=1)
@@ -236,6 +243,7 @@ def test_leaderboard_counts() -> None:
 
 
 def test_output_artifacts() -> None:
+    _install_fake_kaggle()
     print("test_output_artifacts")
     with tempfile.TemporaryDirectory() as td:
         t = run_tournament(AGENTS3, n_games_per_pair=4,
@@ -263,6 +271,7 @@ def test_output_artifacts() -> None:
 
 
 def test_text_renderers() -> None:
+    _install_fake_kaggle()
     print("test_text_renderers")
     t = run_tournament(AGENTS3, n_games_per_pair=4,
                        base_seed=33, parallel=1)

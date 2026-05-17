@@ -174,6 +174,7 @@ def test_preset_spec_builds_a_file() -> None:
 
 # ─── Match results ───────────────────────────────────────────────────────
 def test_single_match() -> None:
+    _install_fake_kaggle()
     print("test_single_match")
     r = run_match("random", "reaction", seed=42)
     check("MatchResult type",  isinstance(r, MatchResult))
@@ -188,6 +189,7 @@ def test_single_match() -> None:
 def test_match_with_swap() -> None:
     """Same seed, with and without swap, must report rewards
     consistently from agent_a's perspective."""
+    _install_fake_kaggle()
     print("test_match_with_swap")
     r_norm = run_match("random", "reaction", seed=99, swap=False)
     r_swap = run_match("random", "reaction", seed=99, swap=True)
@@ -203,6 +205,7 @@ def test_match_with_swap() -> None:
 
 
 def test_run_matches_balance_and_ordering() -> None:
+    _install_fake_kaggle()
     print("test_run_matches_balance_and_ordering")
     results = run_matches("random", "reaction", n_games=8,
                           base_seed=12345, parallel=1)
@@ -219,6 +222,7 @@ def test_run_matches_balance_and_ordering() -> None:
 
 
 def test_jsonl_roundtrip() -> None:
+    _install_fake_kaggle()
     print("test_jsonl_roundtrip")
     with tempfile.TemporaryDirectory() as td:
         path = Path(td) / "results.jsonl"
@@ -237,6 +241,7 @@ def test_jsonl_roundtrip() -> None:
 
 
 def test_summary_shape() -> None:
+    _install_fake_kaggle()
     print("test_summary_shape")
     results = run_matches("random", "reaction", n_games=10,
                           base_seed=1, parallel=1)
@@ -249,6 +254,7 @@ def test_summary_shape() -> None:
 
 
 def test_summary_rejects_mixed_pairs() -> None:
+    _install_fake_kaggle()
     print("test_summary_rejects_mixed_pairs")
     r1 = run_match("random", "reaction", seed=1)
     r2 = run_match("reaction", "random", seed=2)
@@ -267,6 +273,7 @@ def test_summary_rejects_mixed_pairs() -> None:
 def test_metrics_populated_through_runner() -> None:
     """End-to-end: run_match should populate MatchResult.metrics_a/b by
     walking env.steps through compute_metrics."""
+    _install_fake_kaggle()
     print("test_metrics_populated_through_runner")
     r = run_match("random", "reaction", seed=1234)
     check("metrics_a populated",      r.metrics_a is not None)
@@ -277,6 +284,7 @@ def test_metrics_populated_through_runner() -> None:
 
 
 def test_metrics_jsonl_roundtrip() -> None:
+    _install_fake_kaggle()
     print("test_metrics_jsonl_roundtrip")
     with tempfile.TemporaryDirectory() as td:
         path = Path(td) / "results.jsonl"

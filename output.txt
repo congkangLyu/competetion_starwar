@@ -1,0 +1,357 @@
+@congkangLyu ➜ /workspaces/competetion_starwar (main) $ make test
+python3 tests/smoke_test_core.py
+test_parse_dict_obs
+  [OK ] player parsed
+  [OK ] planet count
+  [OK ] fleet count
+  [OK ] step passed through
+  [OK ] comet_planet_ids
+  [OK ] comet group parsed
+  [OK ] comet group path_index
+test_parse_namespace_obs
+  [OK ] namespace parses
+test_derived_views
+  [OK ] my_planets
+  [OK ] enemy_planets
+  [OK ] neutral_planets
+  [OK ] non_my_planets
+  [OK ] planet_by_id lookup
+  [OK ] my_fleets
+  [OK ] enemy_fleets
+  [OK ] is_comet on 3
+  [OK ] is_comet on 0 false
+test_totals
+  [OK ] my_total_ships
+  [OK ] totals owner 0
+  [OK ] totals owner 1
+  [OK ] neutrals excluded
+test_fleet_speed_curve
+  [OK ] monotonic
+  [OK ] 1 ship -> 1.0
+  [OK ] 1000 ships -> ~6.0
+  [OK ] clamped above 1000
+test_seg_hits_sun
+  [OK ] horizontal through center hits
+  [OK ] near miss above sun
+  [OK ] vertical through center hits
+  [OK ] offscreen segment doesn't hit
+  [OK ] tangent-plus-margin hits
+test_orbital_position
+  [OK ] 0 steps unchanged
+  [OK ] half revolution lands opposite
+  [OK ] full revolution returns to start
+  [OK ] quarter turn lands at (50, 25)
+test_is_orbiting
+  [OK ] inner planet orbits
+  [OK ] borderline planet orbits
+  [OK ] outer planet static
+test_geometry_helpers
+  [OK ] dist
+  [OK ] angle_to right
+  [OK ] angle_to down
+test_move_serialization
+  [OK ] to_list
+
+All smoke tests passed.
+python3 tests/smoke_test_agents.py
+test_agent_is_abstract
+  [OK ] Agent() rejects direct instantiation
+test_sniper_basic
+  [OK ] returns Move list
+  [OK ] issues at least one move
+  [OK ] logged a decision per move
+  [OK ] decision references a target
+  [OK ] decision reason is 'nearest'
+test_heuristic_waits
+  [OK ] step 0 returns []
+  [OK ] step 1 returns []
+  [OK ] step 2 produces moves
+  [OK ] decision log populated
+  [OK ] at least one attack/consolidate decision
+test_heuristic_defense_enabled
+  [OK ] runs without crashing with defense on
+test_reset_clears_state
+  [OK ] decisions cleared
+  [OK ] step reset
+  [OK ] game_started cleared
+test_kaggle_adapter_shapes
+  [OK ] returns a list
+  [OK ] each move is [int, float, int]
+  [OK ] planet ids are int
+  [OK ] angles are float
+  [OK ] ship counts are int
+  [OK ] agent_instance attached
+  [OK ] step counter after 1 turn
+  [OK ] step counter advances
+test_kaggle_adapter_handles_namespace_obs
+  [OK ] namespace obs accepted
+test_sniper_parity_with_old_implementation
+  [OK ] player=0: new sniper matches old
+  [OK ] player=1: new sniper matches old
+test_heuristic_parity_with_old_blitz
+  [OK ] player=0: new blitz matches old
+  [OK ] player=1: new blitz matches old
+
+All agent smoke tests passed.
+python3 tests/smoke_test_build.py
+test_build_all_presets
+  [OK ] blitz.py exists
+  [OK ] blitz.py non-empty
+  [OK ] blitz exposes agent()
+  [OK ] blitz agent() returns list
+  [OK ] sniper.py exists
+  [OK ] sniper.py non-empty
+  [OK ] sniper exposes agent()
+  [OK ] sniper agent() returns list
+  [OK ] sentinel.py exists
+  [OK ] sentinel.py non-empty
+  [OK ] sentinel exposes agent()
+  [OK ] sentinel agent() returns list
+test_built_header_carries_metadata
+  [OK ] header mentions preset
+  [OK ] header mentions AUTO-GENERATED
+  [OK ] header has Built timestamp
+  [OK ] header has Commit
+  [OK ] inlines geometry.py
+  [OK ] inlines state.py
+  [OK ] inlines base.py
+  [OK ] inlines heuristic.py
+  [OK ] has Kaggle entrypoint
+  [OK ] no leftover orbit_wars import statement
+test_blitz_parity_against_handmaintained_main
+  [OK ] turn 0 matches
+  [OK ] turn 1 matches
+  [OK ] turn 2 matches
+  [OK ] turn 3 matches
+  [OK ] turn 4 matches
+  [OK ] turn 5 matches
+  [OK ] turn 6 matches
+  [OK ] turn 7 matches
+  [OK ] turn 8 matches
+  [OK ] turn 9 matches
+
+All build smoke tests passed.
+python3 tests/smoke_test_eval.py
+test_resolve_specs
+  [OK ] random passthrough
+  [OK ] reaction passthrough
+  [OK ] relative .py resolves to abs
+  [OK ] relative .py exists
+  [OK ] file: prefix accepted
+  [OK ] missing path raises FileNotFoundError
+test_preset_spec_builds_a_file
+/workspaces/competetion_starwar/tools/build_submission.py:139: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  f'Built:  {dt.datetime.utcnow().isoformat(timespec="seconds")}Z\n'
+build: wrote /tmp/tmpadupaa6_/blitz.py (39017 bytes, 946 lines)
+  [OK ] path exists
+  [OK ] path is in tmp_root
+  [OK ] file is non-trivial
+  [OK ] has Kaggle header
+test_single_match
+  [OK ] MatchResult type
+  [OK ] seed roundtrip
+  [OK ] agent_a label
+  [OK ] position is 0
+  [OK ] n_turns positive
+  [OK ] elapsed positive
+  [OK ] winner is one of {a,b,draw}
+test_match_with_swap
+  [OK ] swap changes agent_a's reward
+  [OK ] position field reflects swap
+test_run_matches_balance_and_ordering
+  [OK ] got 8 results
+  [OK ] position balance
+  [OK ] deterministic seed list
+test_jsonl_roundtrip
+  [OK ] file exists
+  [OK ] same row count
+  [OK ] same first row
+  [OK ] every line is valid JSON
+test_summary_shape
+  [OK ] Summary type
+  [OK ] games count matches
+  [OK ] wins+draws+wins = N
+  [OK ] winrate in [0, 1]
+  [OK ] rendering non-empty
+test_summary_rejects_mixed_pairs
+  [OK ] rejects mixed pairs
+test_metrics_populated_through_runner
+  [OK ] metrics_a populated
+  [OK ] metrics_b populated
+  [OK ] a captured the neutral
+  [OK ] b captured nothing
+  [OK ] a peak planets >= 2
+test_metrics_jsonl_roundtrip
+  [OK ] row count preserved
+  [OK ] metrics dataclass reconstructed
+  [OK ] captured count preserved
+
+All eval smoke tests passed.
+python3 tests/smoke_test_metrics.py
+test_empty_trace
+  [OK ] zeroed metrics on empty trace
+test_planet_capture_and_loss
+  [OK ] player 0 captured 1 planet
+  [OK ] player 0 lost 1 planet
+  [OK ] player 1 captured 1 planet
+  [OK ] player 1 lost 0 planets
+  [OK ] peak planets correct (p0)
+test_fleet_launch_and_sun_death
+  [OK ] fleet launch counted
+  [OK ] sun-death fleet counted
+  [OK ] sun-death ships counted
+test_final_score_uses_last_state
+  [OK ] final_score = own planet + own fleet
+  [OK ] survived all turns
+test_robust_to_missing_observation
+  [OK ] returns zeroed metrics, no crash
+test_namespace_observation_also_supported
+  [OK ] parses namespace step
+test_decisions_jsonl_roundtrip
+  [OK ] blob non-empty
+  [OK ] two lines
+  [OK ] roundtrip length
+  [OK ] first reason preserved
+  [OK ] first move preserved
+  [OK ] meta preserved
+  [OK ] score is None preserved
+
+All metrics smoke tests passed.
+python3 tests/smoke_test_viz.py
+test_load_kaggle_replay_dict_shape
+  [OK ] returns list
+  [OK ] right length
+test_load_kaggle_replay_list_shape
+  [OK ] top-level list accepted
+test_extract_states_walks_trace
+  [OK ] skips empty/None turns
+  [OK ] step numbers preserved
+  [OK ] player patched correctly
+  [OK ] planet visible mid-game
+test_extract_states_namespace_rows
+  [OK ] namespace step parses
+test_render_frame_svg_basic
+  [OK ] starts with <svg
+  [OK ] ends with </svg>
+  [OK ] contains sun coords
+  [OK ] paints player 0 colour
+  [OK ] paints player 1 colour
+  [OK ] paints neutral colour
+  [OK ] renders ship count text
+  [OK ] turn label present
+test_render_frame_svg_with_decisions
+  [OK ] dashed decision overlay rendered
+  [OK ] overlay uses highlight colour
+test_render_frame_svg_marks_comets
+  [OK ] comet rendered with dashed stroke
+test_render_replay_html_shape
+  [OK ] is HTML5 doctype
+  [OK ] title set
+  [OK ] has range slider
+  [OK ] has play button
+  [OK ] frames embedded
+  [OK ] right number of frames
+  [OK ] each frame is SVG
+test_render_replay_html_with_decisions
+  [OK ] decision colour appears
+test_cli_end_to_end
+  [OK ] CLI exits cleanly
+  [OK ] HTML file created
+  [OK ] HTML is non-trivial
+  [OK ] contains 3 SVG frames
+
+All viz smoke tests passed.
+python3 tests/smoke_test_tournament.py
+test_expected_score_known_values
+  [OK ] equal ratings = 0.5
+  [OK ] 400 gap = ~0.909
+  [OK ] 200 gap = ~0.760
+test_compute_elo_one_win
+  [OK ] a gains 16
+  [OK ] b loses 16
+  [OK ] zero-sum
+test_compute_elo_draw
+  [OK ] a unchanged on equal draw
+  [OK ] b unchanged on equal draw
+test_pair_count_and_match_count
+  [OK ] agent list preserved
+  [OK ] 3 pairs of results
+  [OK ] 4 matches per pair
+  [OK ] 12 total matches
+test_winrate_matrix_symmetry
+  [OK ] wr(/tmp/ow_tourn_test_ezmxfkgo/alpha.py,/tmp/ow_tourn_test_ezmxfkgo/beta.py) + wr(/tmp/ow_tourn_test_ezmxfkgo/beta.py,/tmp/ow_tourn_test_ezmxfkgo/alpha.py) ~= 1
+  [OK ] wr(/tmp/ow_tourn_test_ezmxfkgo/alpha.py,/tmp/ow_tourn_test_ezmxfkgo/gamma.py) + wr(/tmp/ow_tourn_test_ezmxfkgo/gamma.py,/tmp/ow_tourn_test_ezmxfkgo/alpha.py) ~= 1
+  [OK ] wr(/tmp/ow_tourn_test_ezmxfkgo/beta.py,/tmp/ow_tourn_test_ezmxfkgo/alpha.py) + wr(/tmp/ow_tourn_test_ezmxfkgo/alpha.py,/tmp/ow_tourn_test_ezmxfkgo/beta.py) ~= 1
+  [OK ] wr(/tmp/ow_tourn_test_ezmxfkgo/beta.py,/tmp/ow_tourn_test_ezmxfkgo/gamma.py) + wr(/tmp/ow_tourn_test_ezmxfkgo/gamma.py,/tmp/ow_tourn_test_ezmxfkgo/beta.py) ~= 1
+  [OK ] wr(/tmp/ow_tourn_test_ezmxfkgo/gamma.py,/tmp/ow_tourn_test_ezmxfkgo/alpha.py) + wr(/tmp/ow_tourn_test_ezmxfkgo/alpha.py,/tmp/ow_tourn_test_ezmxfkgo/gamma.py) ~= 1
+  [OK ] wr(/tmp/ow_tourn_test_ezmxfkgo/gamma.py,/tmp/ow_tourn_test_ezmxfkgo/beta.py) + wr(/tmp/ow_tourn_test_ezmxfkgo/beta.py,/tmp/ow_tourn_test_ezmxfkgo/gamma.py) ~= 1
+test_strong_agent_wins
+  [OK ] alpha is top
+  [OK ] gamma is bottom
+  [OK ] alpha sweeps gamma
+test_deterministic_with_seed
+  [OK ] seed lists identical
+  [OK ] Elo identical
+test_rejects_duplicate_agents
+  [OK ] duplicate specs rejected
+test_too_few_agents
+  [OK ] singleton rejected
+test_leaderboard_counts
+  [OK ] /tmp/ow_tourn_test_ezmxfkgo/alpha.py: games == (N-1)*per_pair
+  [OK ] /tmp/ow_tourn_test_ezmxfkgo/alpha.py: W+D+L == games
+  [OK ] /tmp/ow_tourn_test_ezmxfkgo/beta.py: games == (N-1)*per_pair
+  [OK ] /tmp/ow_tourn_test_ezmxfkgo/beta.py: W+D+L == games
+  [OK ] /tmp/ow_tourn_test_ezmxfkgo/gamma.py: games == (N-1)*per_pair
+  [OK ] /tmp/ow_tourn_test_ezmxfkgo/gamma.py: W+D+L == games
+test_output_artifacts
+  [OK ] matches.jsonl exists
+  [OK ] leaderboard.csv exists
+  [OK ] tournament.json exists
+  [OK ] jsonl is valid
+  [OK ] CSV has 3 rows
+  [OK ] CSV has agent column
+  [OK ] CSV has elo column
+  [OK ] Elo values float-parse
+  [OK ] JSON summary has leaderboard
+  [OK ] JSON summary has pairwise
+test_text_renderers
+  [OK ] leaderboard mentions alpha
+  [OK ] leaderboard has 'elo'
+  [OK ] matrix mentions all agents
+  [OK ] matrix marks diagonal with --
+
+All tournament smoke tests passed.
+@congkangLyu ➜ /workspaces/competetion_starwar (main) $ make pytest
+python3 -m pytest
+============================================================ test session starts ============================================================
+platform linux -- Python 3.12.1, pytest-9.0.3, pluggy-1.6.0
+rootdir: /workspaces/competetion_starwar
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.13.0
+collected 61 items                                                                                                                          
+
+tests/smoke_test_agents.py .........                                                                                                  [ 14%]
+tests/smoke_test_build.py ...                                                                                                         [ 19%]
+tests/smoke_test_core.py ..........                                                                                                   [ 36%]
+tests/smoke_test_eval.py ........F.                                                                                                   [ 52%]
+tests/smoke_test_metrics.py .......                                                                                                   [ 63%]
+tests/smoke_test_tournament.py ............                                                                                           [ 83%]
+tests/smoke_test_viz.py ..........                                                                                                    [100%]
+
+================================================================= FAILURES ==================================================================
+___________________________________________________ test_metrics_populated_through_runner ___________________________________________________
+tests/smoke_test_eval.py:274: in test_metrics_populated_through_runner
+    check("a captured the neutral",   r.metrics_a.planets_captured == 1)
+tests/smoke_test_eval.py:137: in check
+    raise AssertionError(label)
+E   AssertionError: a captured the neutral
+----------------------------------------------------------- Captured stdout call ------------------------------------------------------------
+test_metrics_populated_through_runner
+  [OK ] metrics_a populated
+  [OK ] metrics_b populated
+  [FAIL] a captured the neutral
+========================================================== short test summary info ==========================================================
+FAILED tests/smoke_test_eval.py::test_metrics_populated_through_runner - AssertionError: a captured the neutral
+======================================================= 1 failed, 60 passed in 2.06s ========================================================
+make: *** [Makefile:58: pytest] Error 1

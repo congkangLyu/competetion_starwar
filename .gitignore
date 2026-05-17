@@ -18,3 +18,4 @@ venv/
 # Replay JSON caches (large, regenerable)
 replays/
 logs/
+information/

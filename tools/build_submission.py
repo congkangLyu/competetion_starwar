@@ -136,7 +136,7 @@ def render_header(preset: str, cfg: dict) -> str:
         f'\n'
         f'AUTO-GENERATED -- DO NOT EDIT BY HAND.\n'
         f'Source: configs/{preset}.yaml + orbit_wars/ package\n'
-        f'Built:  {dt.datetime.utcnow().isoformat(timespec="seconds")}Z\n'
+        f'Built:  {dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")}\n'
         f'Commit: {git_commit()}\n'
         f'\n'
         f'{desc}\n'
