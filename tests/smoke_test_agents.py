@@ -35,6 +35,7 @@ _install_kaggle_stub()
 from orbit_wars.agents import (
     Agent, Decision, HeuristicAgent, HeuristicConfig, SniperAgent, make_kaggle_agent,
 )
+from orbit_wars.core.geometry import angle_to
 from orbit_wars.core.state import GameState, Move
 
 
@@ -125,6 +126,110 @@ def test_heuristic_defense_enabled() -> None:
     state = GameState.from_obs(sample_obs(), step=0)
     moves = agent._run_turn(state)
     check("runs without crashing with defense on", isinstance(moves, list))
+
+
+def test_heuristic_orbital_aim_defaults_off() -> None:
+    print("test_heuristic_orbital_aim_defaults_off")
+    cfg = HeuristicConfig()
+    check("orbital aim disabled by default", cfg.use_orbital_aim is False)
+    check("aim iterations has sane default", cfg.aim_iterations >= 1)
+
+
+def moving_target_obs() -> dict:
+    return {
+        "player": 0,
+        "planets": [
+            [0, 0, 20.0, 80.0, 2.0, 200, 3],
+            [1, -1, 60.0, 60.0, 1.0, 5, 1],
+        ],
+        "fleets": [],
+        "angular_velocity": 0.10,
+        "initial_planets": [
+            [0, 0, 20.0, 80.0, 2.0, 200, 3],
+            [1, -1, 60.0, 60.0, 1.0, 5, 1],
+        ],
+        "comets": [],
+        "comet_planet_ids": [],
+        "remainingOverageTime": 60.0,
+    }
+
+
+def static_target_obs() -> dict:
+    return {
+        "player": 0,
+        "planets": [
+            [0, 0, 20.0, 80.0, 2.0, 200, 3],
+            [1, -1, 90.0, 80.0, 1.0, 5, 1],
+        ],
+        "fleets": [],
+        "angular_velocity": 0.10,
+        "initial_planets": [
+            [0, 0, 20.0, 80.0, 2.0, 200, 3],
+            [1, -1, 90.0, 80.0, 1.0, 5, 1],
+        ],
+        "comets": [],
+        "comet_planet_ids": [],
+        "remainingOverageTime": 60.0,
+    }
+
+
+def comet_target_obs() -> dict:
+    path = [(60.0 + i, 60.0) for i in range(20)]
+    return {
+        "player": 0,
+        "planets": [
+            [0, 0, 20.0, 80.0, 2.0, 200, 3],
+            [10, -1, 60.0, 60.0, 1.0, 5, 1],
+        ],
+        "fleets": [],
+        "angular_velocity": 0.0,
+        "initial_planets": [
+            [0, 0, 20.0, 80.0, 2.0, 200, 3],
+            [10, -1, 60.0, 60.0, 1.0, 5, 1],
+        ],
+        "comets": [
+            {"planet_ids": [10], "paths": [path], "path_index": 0},
+        ],
+        "comet_planet_ids": [10],
+        "remainingOverageTime": 60.0,
+    }
+
+
+def test_heuristic_orbital_aim_leads_orbiting_planet() -> None:
+    print("test_heuristic_orbital_aim_leads_orbiting_planet")
+    agent = HeuristicAgent(
+        HeuristicConfig(use_orbital_aim=True, wait_turns=0, aim_iterations=4)
+    )
+    state = GameState.from_obs(moving_target_obs(), step=0)
+    moves = agent._run_turn(state)
+    check("orbital aim produces a move", len(moves) == 1)
+    current_angle = angle_to(20.0, 80.0, 60.0, 60.0)
+    check("angle leads current target position",
+          abs(moves[0].angle - current_angle) > 1e-6)
+    check("decision log records aim point", "aim_x" in agent.decisions[0].meta)
+
+
+def test_heuristic_orbital_aim_keeps_static_target_current() -> None:
+    print("test_heuristic_orbital_aim_keeps_static_target_current")
+    agent = HeuristicAgent(
+        HeuristicConfig(use_orbital_aim=True, wait_turns=0, aim_iterations=4)
+    )
+    state = GameState.from_obs(static_target_obs(), step=0)
+    moves = agent._run_turn(state)
+    check("static aim produces a move", len(moves) == 1)
+    current_angle = angle_to(20.0, 80.0, 90.0, 80.0)
+    check("static target keeps current aim",
+          abs(moves[0].angle - current_angle) < 1e-12)
+
+
+def test_heuristic_orbital_aim_handles_comet_path() -> None:
+    print("test_heuristic_orbital_aim_handles_comet_path")
+    agent = HeuristicAgent(
+        HeuristicConfig(use_orbital_aim=True, wait_turns=0, aim_iterations=4)
+    )
+    state = GameState.from_obs(comet_target_obs(), step=0)
+    moves = agent._run_turn(state)
+    check("comet aim runs without crashing", isinstance(moves, list))
 
 
 def test_reset_clears_state() -> None:
@@ -226,6 +331,10 @@ def main() -> None:
     test_sniper_basic()
     test_heuristic_waits()
     test_heuristic_defense_enabled()
+    test_heuristic_orbital_aim_defaults_off()
+    test_heuristic_orbital_aim_leads_orbiting_planet()
+    test_heuristic_orbital_aim_keeps_static_target_current()
+    test_heuristic_orbital_aim_handles_comet_path()
     test_reset_clears_state()
     test_kaggle_adapter_shapes()
     test_kaggle_adapter_handles_namespace_obs()

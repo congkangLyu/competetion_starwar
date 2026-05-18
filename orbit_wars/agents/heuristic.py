@@ -49,6 +49,8 @@ from orbit_wars.core.geometry import (
     angle_to,
     dist,
     fleet_speed,
+    is_orbiting,
+    orbital_position,
     seg_hits_sun,
 )
 from orbit_wars.core.state import GameState, Move
@@ -89,6 +91,10 @@ class HeuristicConfig:
     # ── Consolidation (surplus ships -> nearest friendly) ──
     consolidate_threshold: int = 15  # only consolidate if availability > this
     consolidate_fraction:  float = 0.5  # send this fraction of availability
+
+    # ── Moving-target aim prediction ──
+    use_orbital_aim: bool = False  # lead orbiting planets / comets when firing
+    aim_iterations: int = 4        # fixed-point iterations for ETA vs aim point
 
     # ── Normalisers (kept on the config so they can be tuned, too) ──
     max_ships_norm: float = 500.0
@@ -154,6 +160,70 @@ class HeuristicAgent(Agent):
             turns = d / fleet_speed(ships)
             ships = int(tgt.ships + tgt.production * turns) + 1
         return ships
+
+    def _predict_comet_position(
+        self, state: GameState, planet_id: int, eta_turns: int
+    ) -> tuple[float, float] | None:
+        """Return a comet's path position ``eta_turns`` ahead, if available."""
+        future_index = max(0, int(eta_turns))
+        for group in state.comet_groups:
+            for idx, pid in enumerate(group.planet_ids):
+                if pid != planet_id:
+                    continue
+                if idx >= len(group.paths):
+                    return None
+                path = group.paths[idx]
+                target_index = group.path_index + future_index
+                if 0 <= target_index < len(path):
+                    return path[target_index]
+                return None
+        return None
+
+    def _predict_target_position(
+        self, state: GameState, tgt: "Planet", eta_turns: int
+    ) -> tuple[float, float]:
+        """Predict target position after ``eta_turns`` turns.
+
+        Static planets stay at their current coordinates. Orbiting planets
+        are reconstructed from their initial position, angular velocity, and
+        the current turn. Comets follow their explicit path when present.
+        """
+        if state.is_comet(tgt.id):
+            comet_pos = self._predict_comet_position(state, tgt.id, eta_turns)
+            if comet_pos is not None:
+                return comet_pos
+            return (tgt.x, tgt.y)
+
+        initial = state.initial_planet_by_id.get(tgt.id)
+        if initial is None:
+            return (tgt.x, tgt.y)
+        if not is_orbiting(initial.x, initial.y, initial.radius):
+            return (tgt.x, tgt.y)
+        return orbital_position(
+            initial.x,
+            initial.y,
+            state.angular_velocity,
+            state.step + max(0, int(eta_turns)),
+        )
+
+    def _aim_point(
+        self, state: GameState, src: "Planet", tgt: "Planet", ships: int
+    ) -> tuple[float, float, float]:
+        """Fixed-point lead calculation for moving targets.
+
+        Fleet ETA depends on the aim point, while the aim point depends on
+        ETA. A few iterations are enough for the coarse turn-level prediction
+        available in the observation.
+        """
+        aim_x, aim_y = tgt.x, tgt.y
+        speed = fleet_speed(ships)
+        eta = dist(src.x, src.y, aim_x, aim_y) / speed if speed > 0 else 0.0
+        iterations = max(0, int(self.config.aim_iterations))
+        for _ in range(iterations):
+            eta_turns = int(round(eta))
+            aim_x, aim_y = self._predict_target_position(state, tgt, eta_turns)
+            eta = dist(src.x, src.y, aim_x, aim_y) / speed if speed > 0 else 0.0
+        return aim_x, aim_y, eta
 
     def _detect_threats(self, state: GameState) -> dict[int, tuple[int, float]]:
         """Cone-test every enemy fleet against every owned planet.
@@ -256,12 +326,13 @@ class HeuristicAgent(Agent):
             if availability[src.id] < s.min_ships:
                 continue
 
-            # Score every legal target
+            # Score every legal target. With moving-target aim enabled, the
+            # final sun check happens after we know the fleet size and aim point.
             scored: list[tuple["Planet", float]] = []
             for tgt in state.non_my_planets:
                 if tgt.id in targeted:
                     continue
-                if seg_hits_sun(src.x, src.y, tgt.x, tgt.y):
+                if not s.use_orbital_aim and seg_hits_sun(src.x, src.y, tgt.x, tgt.y):
                     continue
                 scored.append((tgt, self._score_target(src, tgt, state)))
 
@@ -269,12 +340,26 @@ class HeuristicAgent(Agent):
                 moves.extend(self._consolidate(state, src, availability))
                 continue
 
-            tgt, best = max(scored, key=lambda x: x[1])
-            needed = int(self._capture_cost(src.x, src.y, tgt) * s.attack_buffer)
-            if availability[src.id] >= needed > 0:
+            ordered = (
+                sorted(scored, key=lambda x: x[1], reverse=True)
+                if s.use_orbital_aim
+                else [max(scored, key=lambda x: x[1])]
+            )
+            launched = False
+            for tgt, best in ordered:
+                needed = int(self._capture_cost(src.x, src.y, tgt) * s.attack_buffer)
+                if availability[src.id] < needed or needed <= 0:
+                    continue
+                if s.use_orbital_aim:
+                    aim_x, aim_y, eta = self._aim_point(state, src, tgt, needed)
+                    if seg_hits_sun(src.x, src.y, aim_x, aim_y):
+                        continue
+                else:
+                    aim_x, aim_y = tgt.x, tgt.y
+                    eta = dist(src.x, src.y, tgt.x, tgt.y) / fleet_speed(needed)
                 move = Move(
                     from_planet_id=src.id,
-                    angle=angle_to(src.x, src.y, tgt.x, tgt.y),
+                    angle=angle_to(src.x, src.y, aim_x, aim_y),
                     ships=needed,
                 )
                 moves.append(move)
@@ -286,11 +371,16 @@ class HeuristicAgent(Agent):
                     target_owner=tgt.owner,
                     target_ships=tgt.ships,
                     ships_sent=needed,
+                    aim_x=aim_x,
+                    aim_y=aim_y,
+                    eta_turns=eta,
                 )
                 availability[src.id] -= needed
                 targeted.add(tgt.id)
-            else:
-                # Can't afford the best target -- consolidate instead
+                launched = True
+                break
+            if not launched:
+                # Can't afford or safely aim at any scored target.
                 moves.extend(self._consolidate(state, src, availability))
         return moves
 
