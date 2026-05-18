@@ -24,4 +24,6 @@ config:
   wait_turns: 2
   consolidate_threshold: 15
   consolidate_fraction: 0.5
+  use_orbital_aim: true
+  aim_iterations: 4
   max_ships_norm: 500.0
