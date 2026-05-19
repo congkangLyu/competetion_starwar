@@ -216,7 +216,7 @@ nano configs/aggressive.yaml
 python tools/build_submission.py aggressive -o _build/aggressive.py
 
 # 4. 对比基线打 20 局(4 个并行 worker)
-python tools/eval.py preset:aggressive preset:blitz -n 20 -p 4 -o cmp.jsonl
+python tools/eval.py preset:aggressive preset:blitz -n 20 -p 2 -o cmp.jsonl
 ```
 
 JSONL 每行是一局的完整记录,带 `reward`、`winner` 和嵌套的
@@ -228,7 +228,7 @@ JSONL 每行是一局的完整记录,带 `reward`、`winner` 和嵌套的
 ```bash
 python tools/tournament.py \
     preset:blitz preset:sentinel preset:sniper preset:aggressive random reaction \
-    -n 30 -p 8 --seed 42 -o tourneys/run-2025-05-17
+    -n 30 -p 2 --seed 42 -o tourneys/run-2025-05-17
 ```
 
 stdout 输出:按 Elo 排序的排行榜 + pairwise 胜率矩阵。
@@ -241,10 +241,13 @@ stdout 输出:按 Elo 排序的排行榜 + pairwise 胜率矩阵。
 ```python
 from pathlib import Path
 from kaggle_environments import make
+import json
 env = make("orbit_wars", configuration={"seed": 7}, debug=False)
 env.run(["main.py", "random"])
 Path("replays").mkdir(exist_ok=True)
-Path("replays/g7.json").write_text(env.toJSON())
+Path("replays/g7.json").write_text(
+    json.dumps(env.toJSON(), indent=2)
+)
 ```
 
 然后渲染:
