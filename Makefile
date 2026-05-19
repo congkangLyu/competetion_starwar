@@ -65,7 +65,7 @@ build:
 
 build-all:
 	@mkdir -p _build
-	@for p in blitz sentinel sniper; do \
+	@for p in blitz sentinel sniper peaking ow_proto; do \
 		echo "--- building $$p ---"; \
 		$(PYTHON) tools/build_submission.py $$p --output _build/$$p.py; \
 	done

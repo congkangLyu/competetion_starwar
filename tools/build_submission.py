@@ -58,6 +58,7 @@ AGENT_MODULES: dict[str, list[Path]] = {
     "SniperAgent":    [ROOT / "orbit_wars" / "agents" / "sniper.py"],
     "HeuristicAgent": [ROOT / "orbit_wars" / "agents" / "heuristic.py"],
     "PeakingAgent":   [ROOT / "orbit_wars" / "agents" / "peaking.py"],
+    "OwProtoAgent":   [ROOT / "orbit_wars" / "agents" / "ow_proto.py"],
 }
 
 
@@ -136,6 +137,20 @@ def render_adapter(agent_name: str, config_values: dict) -> str:
             f"{kwargs}\n"
             ")\n"
             "_kaggle_agent = make_kaggle_agent(PeakingAgent, config=_config)\n"
+            "\n"
+            "def agent(obs):\n"
+            "    return _kaggle_agent(obs)\n"
+        )
+    if agent_name == "OwProtoAgent":
+        kwargs = render_config_kwargs(config_values)
+        return (
+            "# ====================================================================\n"
+            "# Kaggle entrypoint\n"
+            "# ====================================================================\n"
+            "_config = OwProtoConfig(\n"
+            f"{kwargs}\n"
+            ")\n"
+            "_kaggle_agent = make_kaggle_agent(OwProtoAgent, config=_config)\n"
             "\n"
             "def agent(obs):\n"
             "    return _kaggle_agent(obs)\n"

@@ -37,6 +37,8 @@ from orbit_wars.agents import (
     Decision,
     HeuristicAgent,
     HeuristicConfig,
+    OwProtoAgent,
+    OwProtoConfig,
     PeakingAgent,
     PeakingConfig,
     SniperAgent,
@@ -265,6 +267,37 @@ def test_peaking_handles_moving_and_comet_targets() -> None:
         check("peaking accepts moving/comet obs", isinstance(moves, list))
 
 
+def test_ow_proto_basic() -> None:
+    print("test_ow_proto_basic")
+    agent = OwProtoAgent(OwProtoConfig(wait_turns=0))
+    state = GameState.from_obs(sample_obs(), step=0)
+    moves = agent._run_turn(state)
+    check("ow_proto returns Move list", all(isinstance(m, Move) for m in moves))
+    check("ow_proto runs without crashing", isinstance(moves, list))
+    by_id = state.planet_by_id
+    check("ow_proto only launches from owned planets",
+          all(by_id[m.from_planet_id].owner == state.player for m in moves))
+    sent_by_source = {}
+    for m in moves:
+        sent_by_source[m.from_planet_id] = sent_by_source.get(m.from_planet_id, 0) + m.ships
+    check("ow_proto never overspends source ships",
+          all(sent <= by_id[src_id].ships for src_id, sent in sent_by_source.items()))
+
+
+def test_ow_proto_reset_clears_private_state() -> None:
+    print("test_ow_proto_reset_clears_private_state")
+    agent = OwProtoAgent(OwProtoConfig(wait_turns=0))
+    state = GameState.from_obs(sample_obs(), step=0)
+    agent._run_turn(state)
+    check("ow_proto records fleet or decision state",
+          bool(agent.fleet_trajectories or agent.decisions))
+    agent.reset()
+    check("ow_proto fleet state cleared", agent.fleet_trajectories == [])
+    check("ow_proto reinforcement state cleared",
+          agent.reinforcement_trajectories == [])
+    check("ow_proto decisions cleared", agent.decisions == [])
+
+
 def test_reset_clears_state() -> None:
     print("test_reset_clears_state")
     agent = SniperAgent()
@@ -370,6 +403,8 @@ def main() -> None:
     test_heuristic_orbital_aim_handles_comet_path()
     test_peaking_basic()
     test_peaking_handles_moving_and_comet_targets()
+    test_ow_proto_basic()
+    test_ow_proto_reset_clears_private_state()
     test_reset_clears_state()
     test_kaggle_adapter_shapes()
     test_kaggle_adapter_handles_namespace_obs()

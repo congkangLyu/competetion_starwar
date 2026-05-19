@@ -167,7 +167,7 @@ def test_build_all_presets() -> None:
     print("test_build_all_presets")
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
-        for preset in ["blitz", "sniper", "sentinel", "peaking"]:
+        for preset in ["blitz", "sniper", "sentinel", "peaking", "ow_proto"]:
             out = build_to_tmp(preset, tmp)
             check(f"{preset}.py exists", out.is_file())
             check(f"{preset}.py non-empty", out.stat().st_size > 1000)

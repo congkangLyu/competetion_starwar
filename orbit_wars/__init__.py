@@ -38,6 +38,7 @@ from orbit_wars.core.geometry import (
     is_orbiting,
     in_bounds,
 )
+from orbit_wars.agents.ow_proto import OwProtoAgent, OwProtoConfig
 
 __all__ = [
     # data
@@ -63,4 +64,7 @@ __all__ = [
     "orbital_position",
     "is_orbiting",
     "in_bounds",
+    # agents
+    "OwProtoAgent",
+    "OwProtoConfig",
 ]

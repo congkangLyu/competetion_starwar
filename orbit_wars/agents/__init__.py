@@ -20,6 +20,7 @@ from orbit_wars.agents.base import (
 from orbit_wars.agents.sniper import SniperAgent
 from orbit_wars.agents.heuristic import HeuristicAgent, HeuristicConfig
 from orbit_wars.agents.peaking import PeakingAgent, PeakingConfig
+from orbit_wars.agents.ow_proto import OwProtoAgent, OwProtoConfig
 
 __all__ = [
     "Agent",
@@ -32,4 +33,6 @@ __all__ = [
     "HeuristicConfig",
     "PeakingAgent",
     "PeakingConfig",
+    "OwProtoAgent",
+    "OwProtoConfig",
 ]

@@ -1,0 +1,29 @@
+# OW-Proto -- high-production-core expansion baseline.
+#
+# Port of the "Orbit Wars 1000+ Public Score Agent" notebook strategy.
+# It prioritizes high-production planets, predicts moving-target shots,
+# reinforces threatened planets, and coordinates multi-source attacks.
+
+name: ow_proto
+description: |
+  Port of the public OW-Proto high-production-core expansion agent.
+  Scores targets by production, distance, enemy ownership, ETA, and cost;
+  predicts moving targets; reinforces threatened planets; and uses
+  cooperative multi-source attacks.
+
+agent: OwProtoAgent
+
+config:
+  min_ships_mine_attack: 5
+  min_ships_target_coop_attack: 20
+  coop_planet_cap: 8
+  lookahead_ticks: 60
+  wait_turns: 2
+
+  formula_dist: 100.0
+  formula_prod_mult: 15.0
+  formula_enemy_bonus_mult: 10.0
+  formula_total_ships_percent: 0.7
+  formula_eta_mult: 2.0
+
+  skip_comets: true
