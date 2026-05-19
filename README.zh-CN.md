@@ -227,8 +227,8 @@ JSONL 每行是一局的完整记录,带 `reward`、`winner` 和嵌套的
 
 ```bash
 python tools/tournament.py \
-    preset:blitz preset:sentinel preset:sniper preset:aggressive random reaction \
-    -n 30 -p 2 --seed 42 -o tourneys/run-2025-05-17
+  preset:blitz preset:sentinel preset:sniper preset:aggressive random \
+  -n 10 -p 2 --seed 42 -o tourneys/run-2025-05-17
 ```
 
 stdout 输出:按 Elo 排序的排行榜 + pairwise 胜率矩阵。

@@ -1,0 +1,45 @@
+# Peaking -- mission-oriented baseline adapted from 1103-peaking-bot.
+#
+# This preset keeps the notebook strategy's core shape: build a compact
+# world model, use moving-target / comet-aware shot planning, reserve
+# defensive ships, and greedily execute scored missions.
+
+name: peaking
+description: |
+  Mission-oriented agent adapted from the 1103 peaking bot. Uses a
+  compact WorldModel, sun-safe moving-target aiming, defensive reserves,
+  and greedy capture/rescue/reinforce/snipe missions.
+
+agent: PeakingAgent
+
+config:
+  sun_safety: 1.5
+  launch_clearance: 0.1
+  horizon: 50
+  route_search_horizon: 30
+  intercept_tolerance: 1
+  aim_iterations: 2
+
+  early_turn_limit: 40
+  opening_turn_limit: 80
+  late_remaining_turns: 60
+  very_late_remaining_turns: 25
+
+  reserve_floor: 5
+  defense_buffer: 2
+  proactive_defense_horizon: 18
+  attack_margin_base: 2
+  attack_margin_prod_weight: 1.5
+  hostile_value_mult: 1.65
+  static_value_mult: 1.25
+  contested_neutral_mult: 0.75
+  comet_value_mult: 0.7
+
+  partial_source_min_ships: 6
+  max_missions_per_turn: 8
+  max_sources_per_target: 3
+  snipe_window: 2
+  reinforce_min_production: 2
+  reinforce_max_travel_turns: 20
+  reinforce_source_fraction: 0.55
+  cost_turn_weight: 0.55

@@ -229,8 +229,8 @@ planets, etc.). Pipe through `jq` or load in pandas for analysis.
 
 ```bash
 python tools/tournament.py \
-    preset:blitz preset:sentinel preset:sniper preset:aggressive random reaction \
-    -n 30 -p 8 --seed 42 -o tourneys/run-2025-05-17
+  preset:blitz preset:sentinel preset:sniper preset:aggressive random \
+  -n 10 -p 2 --seed 42 -o tourneys/run-2025-05-17
 ```
 
 Output to stdout: leaderboard sorted by Elo + pairwise winrate matrix.

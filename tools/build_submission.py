@@ -57,6 +57,7 @@ SHARED_MODULES = [
 AGENT_MODULES: dict[str, list[Path]] = {
     "SniperAgent":    [ROOT / "orbit_wars" / "agents" / "sniper.py"],
     "HeuristicAgent": [ROOT / "orbit_wars" / "agents" / "heuristic.py"],
+    "PeakingAgent":   [ROOT / "orbit_wars" / "agents" / "peaking.py"],
 }
 
 
@@ -121,6 +122,20 @@ def render_adapter(agent_name: str, config_values: dict) -> str:
             f"{kwargs}\n"
             ")\n"
             "_kaggle_agent = make_kaggle_agent(HeuristicAgent, config=_config)\n"
+            "\n"
+            "def agent(obs):\n"
+            "    return _kaggle_agent(obs)\n"
+        )
+    if agent_name == "PeakingAgent":
+        kwargs = render_config_kwargs(config_values)
+        return (
+            "# ====================================================================\n"
+            "# Kaggle entrypoint\n"
+            "# ====================================================================\n"
+            "_config = PeakingConfig(\n"
+            f"{kwargs}\n"
+            ")\n"
+            "_kaggle_agent = make_kaggle_agent(PeakingAgent, config=_config)\n"
             "\n"
             "def agent(obs):\n"
             "    return _kaggle_agent(obs)\n"

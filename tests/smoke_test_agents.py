@@ -33,7 +33,14 @@ _install_kaggle_stub()
 
 
 from orbit_wars.agents import (
-    Agent, Decision, HeuristicAgent, HeuristicConfig, SniperAgent, make_kaggle_agent,
+    Agent,
+    Decision,
+    HeuristicAgent,
+    HeuristicConfig,
+    PeakingAgent,
+    PeakingConfig,
+    SniperAgent,
+    make_kaggle_agent,
 )
 from orbit_wars.core.geometry import angle_to
 from orbit_wars.core.state import GameState, Move
@@ -232,6 +239,32 @@ def test_heuristic_orbital_aim_handles_comet_path() -> None:
     check("comet aim runs without crashing", isinstance(moves, list))
 
 
+def test_peaking_basic() -> None:
+    print("test_peaking_basic")
+    agent = PeakingAgent(PeakingConfig(partial_source_min_ships=1))
+    state = GameState.from_obs(sample_obs(), step=3)
+    moves = agent._run_turn(state)
+    check("peaking returns Move list", all(isinstance(m, Move) for m in moves))
+    check("peaking runs without crashing", isinstance(moves, list))
+    by_id = state.planet_by_id
+    check("peaking only launches from owned planets",
+          all(by_id[m.from_planet_id].owner == state.player for m in moves))
+    sent_by_source = {}
+    for m in moves:
+        sent_by_source[m.from_planet_id] = sent_by_source.get(m.from_planet_id, 0) + m.ships
+    check("peaking never overspends source ships",
+          all(sent <= by_id[src_id].ships for src_id, sent in sent_by_source.items()))
+
+
+def test_peaking_handles_moving_and_comet_targets() -> None:
+    print("test_peaking_handles_moving_and_comet_targets")
+    agent = PeakingAgent(PeakingConfig(partial_source_min_ships=1))
+    for obs in [moving_target_obs(), comet_target_obs()]:
+        state = GameState.from_obs(obs, step=0)
+        moves = agent._run_turn(state)
+        check("peaking accepts moving/comet obs", isinstance(moves, list))
+
+
 def test_reset_clears_state() -> None:
     print("test_reset_clears_state")
     agent = SniperAgent()
@@ -335,6 +368,8 @@ def main() -> None:
     test_heuristic_orbital_aim_leads_orbiting_planet()
     test_heuristic_orbital_aim_keeps_static_target_current()
     test_heuristic_orbital_aim_handles_comet_path()
+    test_peaking_basic()
+    test_peaking_handles_moving_and_comet_targets()
     test_reset_clears_state()
     test_kaggle_adapter_shapes()
     test_kaggle_adapter_handles_namespace_obs()
