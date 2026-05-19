@@ -35,5 +35,10 @@ config:
   consolidate_threshold: 15
   consolidate_fraction: 0.5
 
+  # Moving-target aim prediction
+  # Keep disabled for blitz so it remains byte-equivalent to current main.py.
+  use_orbital_aim: false
+  aim_iterations: 4
+
   # Normalisers
   max_ships_norm: 500.0
