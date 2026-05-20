@@ -185,6 +185,29 @@ def test_render_frame_svg_marks_comets() -> None:
     check("comet rendered with dashed stroke", "stroke-dasharray=\"0.4 0.4\"" in svg)
 
 
+def test_render_frame_svg_show_orbits() -> None:
+    print("test_render_frame_svg_show_orbits")
+    obs = {
+        "player": 0,
+        "planets": [
+            [0, 0, 20, 20, 2, 5, 1],
+            [1, -1, 80, 80, 2, 5, 1],
+        ],
+        "fleets": [],
+        "angular_velocity": 0.03,
+        "initial_planets": [
+            [0, 0, 20, 20, 2, 5, 1],
+            [1, -1, 80, 80, 2, 5, 1],
+        ],
+        "comets": [],
+        "comet_planet_ids": [],
+        "remainingOverageTime": 60.0,
+    }
+    state = GameState.from_obs(obs, step=0)
+    svg = render_frame_svg(state, show_orbits=True)
+    check("orbit guide rendered", "#94a3b8" in svg)
+
+
 # ─── HTML renderer ───────────────────────────────────────────────────────
 def test_render_replay_html_shape() -> None:
     print("test_render_replay_html_shape")
@@ -214,6 +237,20 @@ def test_render_replay_html_with_decisions() -> None:
     check("decision colour appears", "#fef08a" in html)
 
 
+def test_render_replay_html_with_player_names() -> None:
+    print("test_render_replay_html_with_player_names")
+    states = [sample_state(step=i) for i in range(2)]
+    html = render_replay_html(
+        states,
+        title="Named replay",
+        player_names={0: "ow_proto", 1: "blitz"},
+    )
+    check("player 0 name rendered", "ow_proto" in html)
+    check("player 1 name rendered", "blitz" in html)
+    check("player ids rendered", "P0" in html and "P1" in html)
+    check("legend swatches rendered", "class=\"swatch\"" in html)
+
+
 # ─── CLI end-to-end ──────────────────────────────────────────────────────
 def test_cli_end_to_end() -> None:
     """Drive tools/viz.py as a subprocess: synthetic replay JSON in,
@@ -229,7 +266,15 @@ def test_cli_end_to_end() -> None:
         out_html = Path(td) / "out.html"
         replay.write_text(json.dumps({"steps": steps}), encoding="utf-8")
         result = subprocess.run(
-            [sys.executable, "tools/viz.py", str(replay), "-o", str(out_html)],
+            [
+                sys.executable,
+                "tools/viz.py",
+                str(replay),
+                "-o",
+                str(out_html),
+                "--names",
+                "alpha,beta",
+            ],
             cwd=ROOT, capture_output=True, text=True,
         )
         check("CLI exits cleanly", result.returncode == 0)
@@ -237,6 +282,55 @@ def test_cli_end_to_end() -> None:
         txt = out_html.read_text(encoding="utf-8")
         check("HTML is non-trivial",   len(txt) > 1000)
         check("contains 3 SVG frames", txt.count("<svg") == 3)
+        check("CLI player names rendered", "alpha" in txt and "beta" in txt)
+
+
+def test_replay_cli_end_to_end() -> None:
+    """Drive legacy tools/replay.py too; Makefile's replay target uses it."""
+    print("test_replay_cli_end_to_end")
+    steps = [
+        make_step([[0, 0, 20, 20, 2, 50, 3], [1, 1, 80, 80, 2, 30, 3]], []),
+        make_step([[0, 0, 20, 20, 2, 53, 3], [1, 1, 80, 80, 2, 30, 3]], []),
+    ]
+    with tempfile.TemporaryDirectory() as td:
+        replay = Path(td) / "replay.json"
+        out_html = Path(td) / "out.html"
+        replay.write_text(json.dumps({"steps": steps}), encoding="utf-8")
+        result = subprocess.run(
+            [
+                sys.executable,
+                "tools/replay.py",
+                str(replay),
+                "-o",
+                str(out_html),
+                "--show-orbits",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        check("replay CLI exits cleanly", result.returncode == 0)
+        check("replay HTML file created", out_html.is_file())
+        txt = out_html.read_text(encoding="utf-8")
+        check("replay HTML is non-trivial", len(txt) > 1000)
+        check("replay contains 2 SVG frames", txt.count("<svg") == 2)
+
+
+def test_cli_empty_replay_fails_clearly() -> None:
+    print("test_cli_empty_replay_fails_clearly")
+    with tempfile.TemporaryDirectory() as td:
+        replay = Path(td) / "empty.json"
+        out_html = Path(td) / "out.html"
+        replay.write_text(json.dumps({"steps": []}), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, "tools/viz.py", str(replay), "-o", str(out_html)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        check("empty replay exits non-zero", result.returncode != 0)
+        check("empty replay error is clear", "no usable frames" in result.stderr)
+        check("empty replay wrote no HTML", not out_html.exists())
 
 
 # ─── Runner ──────────────────────────────────────────────────────────────
@@ -248,9 +342,13 @@ def main() -> None:
     test_render_frame_svg_basic()
     test_render_frame_svg_with_decisions()
     test_render_frame_svg_marks_comets()
+    test_render_frame_svg_show_orbits()
     test_render_replay_html_shape()
     test_render_replay_html_with_decisions()
+    test_render_replay_html_with_player_names()
     test_cli_end_to_end()
+    test_replay_cli_end_to_end()
+    test_cli_empty_replay_fails_clearly()
     print("\nAll viz smoke tests passed.")
 
 

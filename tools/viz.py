@@ -43,6 +43,16 @@ from orbit_wars.analysis import (
 )
 
 
+def parse_player_names(raw: str | None) -> dict[int, str]:
+    if not raw:
+        return {}
+    return {
+        idx: name.strip()
+        for idx, name in enumerate(raw.split(","))
+        if name.strip()
+    }
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="Render an Orbit Wars replay JSON to a single-file HTML viewer."
@@ -60,10 +70,16 @@ def main() -> None:
                     help="custom HTML title")
     ap.add_argument("--width", type=int, default=640,
                     help="rendered SVG pixel width (default 640)")
+    ap.add_argument("--show-orbits", action="store_true",
+                    help="draw dashed orbital circles for orbiting planets")
+    ap.add_argument("--names", default=None,
+                    help="comma-separated player names, e.g. 'ow_proto,blitz'")
     args = ap.parse_args()
 
     steps = load_kaggle_replay(args.replay)
     states = extract_states(steps, player=args.player)
+    if not states:
+        sys.exit(f"viz: no usable frames found in {args.replay}")
 
     decisions_by_step: dict[int, list] = {}
     if args.decisions:
@@ -74,8 +90,10 @@ def main() -> None:
     html = render_replay_html(
         states,
         decisions_by_step=decisions_by_step,
+        player_names=parse_player_names(args.names),
         title=title,
         frame_width=args.width,
+        show_orbits=args.show_orbits,
     )
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)

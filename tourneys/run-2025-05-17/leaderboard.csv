@@ -1,7 +1,6 @@
 agent,elo,games,wins,draws,losses,winrate
-preset:peaking,1772.12,50,48,0,2,0.9600
-preset:sniper,1595.44,50,31,0,19,0.6200
-preset:aggressive,1541.92,50,26,0,24,0.5200
-preset:blitz,1466.03,50,24,0,26,0.4800
-preset:sentinel,1408.48,50,15,0,35,0.3000
-random,1216.01,50,6,0,44,0.1200
+preset:sentinel,1531.23,4,3,0,1,0.7500
+preset:blitz,1530.59,4,3,0,1,0.7500
+preset:aggressive,1500.73,4,2,0,2,0.5000
+preset:sniper,1497.30,4,2,0,2,0.5000
+random,1440.15,4,0,0,4,0.0000

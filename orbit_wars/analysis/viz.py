@@ -30,7 +30,7 @@ import math
 from typing import Iterable
 
 from orbit_wars.agents.base import Decision
-from orbit_wars.core.geometry import BOARD_SIZE, SUN_R, SUN_X, SUN_Y
+from orbit_wars.core.geometry import BOARD_SIZE, SUN_R, SUN_X, SUN_Y, dist, is_orbiting
 from orbit_wars.core.state import GameState
 
 
@@ -48,6 +48,50 @@ def _color_for(owner: int) -> str:
     return PLAYER_COLORS.get(owner, "#888a99")
 
 
+def _player_label(player: int, player_names: dict[int, str] | None = None) -> str:
+    if player_names and player in player_names:
+        return player_names[player]
+    if player == -1:
+        return "Neutral"
+    return f"Player {player}"
+
+
+def _players_in(states: list[GameState]) -> list[int]:
+    owners = {
+        p.owner
+        for state in states
+        for p in state.planets
+        if p.owner >= 0
+    }
+    owners.update({
+        f.owner
+        for state in states
+        for f in state.fleets
+        if f.owner >= 0
+    })
+    return sorted(owners)
+
+
+def _render_player_legend(
+    players: list[int],
+    player_names: dict[int, str] | None,
+) -> str:
+    if not players:
+        return ""
+    items = []
+    for player in players:
+        label = _html.escape(_player_label(player, player_names))
+        color = _color_for(player)
+        items.append(
+            '<span class="player">'
+            f'<span class="swatch" style="background:{color}"></span>'
+            f'<span class="pid">P{player}</span>'
+            f'<span>{label}</span>'
+            '</span>'
+        )
+    return '<div class="players">' + "".join(items) + "</div>\n"
+
+
 # ─── Single-frame SVG ────────────────────────────────────────────────────
 def render_frame_svg(
     state: GameState,
@@ -56,6 +100,7 @@ def render_frame_svg(
     decisions_at_step: Iterable[Decision] | None = None,
     show_fleet_arrows: bool = True,
     show_comet_marks: bool = True,
+    show_orbits: bool = False,
 ) -> str:
     """Return a self-contained SVG string of one game state.
 
@@ -78,6 +123,19 @@ def render_frame_svg(
         f'<circle cx="{SUN_X}" cy="{SUN_Y}" r="{SUN_R}" '
         f'fill="#fbbf24" opacity="0.9"/>'
     )
+
+    if show_orbits:
+        orbit_radii = sorted({
+            round(dist(p.x, p.y, SUN_X, SUN_Y), 3)
+            for p in state.initial_planets
+            if is_orbiting(p.x, p.y, p.radius)
+        })
+        for radius in orbit_radii:
+            parts.append(
+                f'<circle cx="{SUN_X}" cy="{SUN_Y}" r="{radius}" '
+                f'fill="none" stroke="#94a3b8" stroke-width="0.15" '
+                f'stroke-dasharray="0.8 0.8" opacity="0.45"/>'
+            )
 
     # Planets
     comet_ids = set(state.comet_planet_ids)
@@ -163,9 +221,11 @@ def render_replay_html(
     states: list[GameState],
     *,
     decisions_by_step: dict[int, list[Decision]] | None = None,
+    player_names: dict[int, str] | None = None,
     title: str = "Orbit Wars replay",
     frame_width: int = 640,
     autoplay_ms: int = 100,
+    show_orbits: bool = False,
 ) -> str:
     """Return a standalone HTML document with a time-slider replay.
 
@@ -178,9 +238,15 @@ def render_replay_html(
     for s in states:
         decs = decisions_by_step.get(s.step, [])
         rendered.append(
-            render_frame_svg(s, width=frame_width, decisions_at_step=decs)
+            render_frame_svg(
+                s,
+                width=frame_width,
+                decisions_at_step=decs,
+                show_orbits=show_orbits,
+            )
         )
     frames_js = json.dumps(rendered)
+    player_legend = _render_player_legend(_players_in(states), player_names)
 
     return (
         "<!doctype html>\n"
@@ -197,10 +263,15 @@ def render_replay_html(
         "  button{background:#374151;color:#eee;border:0;padding:6px 14px;cursor:pointer;border-radius:4px;font-family:inherit}\n"
         "  button:hover{background:#4b5563}\n"
         "  h2{font-weight:normal;font-size:18px;margin:0 0 16px 0}\n"
+        "  .players{display:flex;flex-wrap:wrap;gap:10px 16px;margin:-6px 0 14px 0;font-size:13px}\n"
+        "  .player{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}\n"
+        "  .swatch{width:10px;height:10px;border-radius:50%;display:inline-block;border:1px solid rgba(255,255,255,.45)}\n"
+        "  .pid{color:#aeb7c7}\n"
         "</style>\n"
         "</head><body>\n"
         '<div class="wrap">\n'
         f"<h2>{_html.escape(title)}</h2>\n"
+        f"{player_legend}"
         '<div class="frame" id="f"></div>\n'
         '<div class="controls">\n'
         '<div class="label"><span>turn <span id="t">0</span> / '

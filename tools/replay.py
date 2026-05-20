@@ -21,8 +21,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from orbit_wars.analysis.replay import states_from_replay
-from orbit_wars.analysis.viz import render_timeline
+from orbit_wars.analysis import (
+    extract_states,
+    load_kaggle_replay,
+    render_replay_html,
+)
+
+
+def parse_player_names(raw: str | None) -> dict[int, str]:
+    if not raw:
+        return {}
+    return {
+        idx: name.strip()
+        for idx, name in enumerate(raw.split(","))
+        if name.strip()
+    }
 
 
 def main() -> None:
@@ -34,24 +47,28 @@ def main() -> None:
                     help="Whose POV to render (default: 0)")
     ap.add_argument("--show-orbits", action="store_true",
                     help="Draw dashed orbital circles for each planet")
+    ap.add_argument("--names", default=None,
+                    help="Comma-separated player names, e.g. 'ow_proto,blitz'")
     ap.add_argument("--width", type=int, default=600)
     ap.add_argument("--height", type=int, default=600)
     args = ap.parse_args()
 
-    states = states_from_replay(args.replay_json, player=args.player)
+    steps = load_kaggle_replay(args.replay_json)
+    states = extract_states(steps, player=args.player)
     if not states:
         sys.exit(f"replay: no usable frames found in {args.replay_json}")
 
     out = Path(args.output)
     title = out.stem
-    render_timeline(
+    html = render_replay_html(
         states,
         title=title,
-        width=args.width,
-        height=args.height,
+        player_names=parse_player_names(args.names),
+        frame_width=args.width,
         show_orbits=args.show_orbits,
-        output_path=out,
     )
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(html, encoding="utf-8")
     print(f"replay: wrote {out} ({len(states)} frames)")
 
 
