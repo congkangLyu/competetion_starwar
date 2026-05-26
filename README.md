@@ -145,6 +145,9 @@ competetion_starwar/
 │   ├── blitz.yaml               # 72.2% baseline (default submission)
 │   ├── sentinel.yaml            # blitz + defensive reinforcement
 │   └── sniper.yaml              # naive nearest-planet baseline
+├── search_spaces/               # parameter-search spaces for tools/search_params.py
+│   ├── ow_proto_core.yaml       # starter search space for the ow_proto champion
+│   └── peaking_core.yaml        # starter search space for the peaking preset
 │
 ├── orbit_wars/                  # ── the package ──
 │   ├── __init__.py              # re-export of common symbols
@@ -166,6 +169,7 @@ competetion_starwar/
 ├── tools/                       # CLI entrypoints (scripts, not importable)
 │   ├── build_submission.py      # YAML preset -> single-file main.py
 │   ├── eval.py                  # two-agent local evaluation
+│   ├── search_params.py         # generate + evaluate parameter variants
 │   ├── tournament.py            # N-agent round-robin + Elo
 │   ├── viz.py                   # replay JSON -> interactive HTML
 │   └── replay.py                # ad-hoc replay helpers
@@ -177,6 +181,7 @@ competetion_starwar/
 │   ├── smoke_test_build.py
 │   ├── smoke_test_eval.py
 │   ├── smoke_test_metrics.py
+│   ├── smoke_test_search_params.py
 │   ├── smoke_test_viz.py
 │   └── smoke_test_tournament.py
 │
@@ -224,6 +229,30 @@ python tools/eval.py preset:aggressive preset:blitz -n 20 -p 4 -o cmp.jsonl
 The JSONL file has one row per game with reward, winner, and full
 `PlayerMetrics` (planets captured/lost, ships lost to sun, peak
 planets, etc.). Pipe through `jq` or load in pandas for analysis.
+
+### Search strategy parameters
+
+Use `tools/search_params.py` when manual YAML tweaking gets slow. It
+starts from a base preset, samples or enumerates a search space, builds
+each candidate into an isolated file, evaluates it, and writes a ranked
+result table.
+
+```bash
+python tools/search_params.py configs/ow_proto.yaml search_spaces/ow_proto_core.yaml \
+  --opponent preset:ow_proto \
+  --mode random \
+  --samples 24 \
+  --games 10 \
+  -p 4 \
+  --seed 20260526 \
+  --out runs/search-ow-proto-core
+```
+
+The output directory contains `base.yaml`, `search_space.yaml`,
+generated candidate YAMLs, built candidate files, per-candidate match
+JSONL, `results.csv`, `results.json`, `best.yaml`, and a `top/` folder
+with the best candidate YAMLs. Use `--mode grid` for a full cartesian
+search, or `--dry-run` to generate candidates without running games.
 
 ### Run a round-robin tournament
 
@@ -425,6 +454,24 @@ python tools/eval.py preset:my_idea preset:blitz -n 50 -p 8 -o cmp.jsonl
 | `--episode-steps` | None | Override kaggle `episodeSteps` (default 500) |
 | `-o, --output` | None | Write per-match JSONL here |
 
+### `tools/search_params.py`
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `base_config search_space` | — | Base preset YAML and parameter-space YAML |
+| `--opponent` | `preset:ow_proto` | Opponent spec used for candidate evaluation |
+| `--mode` | `random` | Candidate selection mode: `random` or `grid` |
+| `--samples` | None | Candidate count for random mode; grid prefix length for grid mode |
+| `--games` | 6 | Games per candidate |
+| `-p, --parallel` | 1 | Process pool size for each candidate evaluation |
+| `--seed` | None | Seed for candidate sampling and match seeds |
+| `--episode-steps` | None | Optional kaggle `episodeSteps` override for rough screens |
+| `--no-balance` | off | Skip position swap |
+| `--out` | timestamped `runs/` dir | Output directory |
+| `--prefix` | derived from base | Candidate name prefix |
+| `--top-k` | 5 | Copy top K candidate YAMLs into `top/` |
+| `--dry-run` | off | Generate candidate YAML/Python files without evaluation |
+
 ### `tools/tournament.py`
 
 | Flag | Default | Meaning |
@@ -467,7 +514,7 @@ python tools/eval.py preset:my_idea preset:blitz -n 50 -p 8 -o cmp.jsonl
 make help              show this list
 make test              run all 7 standalone smoke suites
 make test-core         run one suite (replace core with any of:
-                          core agents build eval metrics viz tournament)
+                          core agents build eval metrics search viz tournament)
 make pytest            run every smoke_test_*.py through pytest
 make pytest-verbose    pytest with -v -s
 
@@ -494,9 +541,10 @@ On Windows without `make`, the right-hand-side commands work as-is.
 | `smoke_test_build.py` | 32 |  3 | YAML → main.py, built blitz vs old main.py parity |
 | `smoke_test_eval.py` | 40 | 10 | Runner, JSONL roundtrip, metrics integration |
 | `smoke_test_metrics.py` | 20 |  7 | Pure metrics on synthetic env.steps |
+| `smoke_test_search_params.py` | 24 |  5 | Parameter search generation, ranking, CLI dry-run |
 | `smoke_test_viz.py` | 31 | 10 | SVG/HTML renderers, replay loader, CLI |
 | `smoke_test_tournament.py` | 45 | 12 | Round-robin, pairwise WR, Elo |
-| **Total** | **237** | **61** | |
+| **Total** | **261** | **66** | |
 
 Notes:
 - The "standalone check" column counts individual `[OK ]` lines — those

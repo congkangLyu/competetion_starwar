@@ -1,0 +1,32 @@
+# OW-Proto Aggressive Early Expansion
+#
+# Hypothesis: Accelerate early expansion by:
+# - Allowing immediate action (wait_turns: 2 → 1)
+# - Prioritizing production heavily (formula_prod_mult: 15.0 → 22.0)
+# - Encouraging longer-range expansion (formula_dist: 100.0 → 80.0)
+#
+# Expected: Faster planet acquisition in early game, control of high-production hubs
+# Risk: May be vulnerable to coordinated attacks from opponents
+
+name: ow_proto_aggressive
+description: |
+  OW-Proto variant optimized for aggressive early expansion.
+  Starts immediately (turn 1 instead of turn 3), heavily prioritizes
+  high-production planets, and encourages longer-distance expansion.
+
+agent: OwProtoAgent
+
+config:
+  min_ships_mine_attack: 5
+  min_ships_target_coop_attack: 20
+  coop_planet_cap: 8
+  lookahead_ticks: 60
+  wait_turns: 1
+
+  formula_dist: 80.0
+  formula_prod_mult: 22.0
+  formula_enemy_bonus_mult: 10.0
+  formula_total_ships_percent: 0.7
+  formula_eta_mult: 2.0
+
+  skip_comets: true

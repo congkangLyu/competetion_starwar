@@ -4,7 +4,7 @@
 PYTHON ?= python3
 PRESET ?= blitz
 
-.PHONY: help test test-core test-agents test-build test-eval test-metrics test-viz test-tournament \
+.PHONY: help test test-core test-agents test-build test-eval test-metrics test-viz test-tournament test-search \
         build build-all submit-prep eval pytest pytest-verbose clean
 
 help:
@@ -16,6 +16,7 @@ help:
 	@echo "  make test-eval        run runner smoke tests"
 	@echo "  make test-metrics     run metrics + decision-log smoke tests"
 	@echo "  make test-viz         run renderer + replay smoke tests"
+	@echo "  make test-search      run parameter-search smoke tests"
 	@echo ""
 	@echo "  make replay REPLAY=path/to.json [OUT=out.html]   render a replay"
 	@echo ""
@@ -28,7 +29,7 @@ help:
 	@echo ""
 	@echo "  make clean            remove generated build/eval artifacts"
 
-test: test-core test-agents test-build test-eval test-metrics test-viz test-tournament
+test: test-core test-agents test-build test-eval test-metrics test-viz test-tournament test-search
 
 test-core:
 	$(PYTHON) tests/smoke_test_core.py
@@ -50,6 +51,9 @@ test-viz:
 
 test-tournament:
 	$(PYTHON) tests/smoke_test_tournament.py
+
+test-search:
+	$(PYTHON) tests/smoke_test_search_params.py
 
 # pytest entrypoint -- runs every smoke_test_*.py through pytest's
 # collector with proper assertion reporting, parametrisation visibility,

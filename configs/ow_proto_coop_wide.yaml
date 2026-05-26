@@ -1,0 +1,33 @@
+# OW-Proto Wider Cooperation Attacks
+#
+# Hypothesis: Expand multi-source attack capabilities by:
+# - Allowing more planets to participate in cooperative attacks (coop_planet_cap: 8 → 12)
+# - Lowering the target ship threshold for triggering coop attacks (min_ships_target_coop_attack: 20 → 15)
+# - This enables easier breakthrough of high-production enemy planets through coordination
+#
+# Expected: Better ability to capture strongly-defended planets through wider cooperation
+# Risk: Resources may be fragmented, and defense could be weakened
+
+name: ow_proto_coop_wide
+description: |
+  OW-Proto variant optimized for wider cooperative multi-source attacks.
+  Allows more planets (12 vs 8) to join coordinated attacks, and lowers
+  the trigger threshold (15 vs 20 enemy ships). Enables breakthrough of
+  well-defended planets through greater coordination.
+
+agent: OwProtoAgent
+
+config:
+  min_ships_mine_attack: 5
+  min_ships_target_coop_attack: 15
+  coop_planet_cap: 12
+  lookahead_ticks: 60
+  wait_turns: 2
+
+  formula_dist: 100.0
+  formula_prod_mult: 15.0
+  formula_enemy_bonus_mult: 10.0
+  formula_total_ships_percent: 0.7
+  formula_eta_mult: 2.0
+
+  skip_comets: true

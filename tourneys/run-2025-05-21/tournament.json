@@ -1,0 +1,102 @@
+{
+  "agents": [
+    "preset:blitz",
+    "preset:sentinel",
+    "preset:sniper",
+    "preset:aggressive",
+    "preset:peaking",
+    "preset:ow_proto"
+  ],
+  "elo": {
+    "preset:blitz": 1277.6758271799451,
+    "preset:sentinel": 1304.4600793721352,
+    "preset:sniper": 1431.1896722492502,
+    "preset:aggressive": 1450.983661112957,
+    "preset:peaking": 1657.7061401711849,
+    "preset:ow_proto": 1877.9846199145277
+  },
+  "pairwise_winrate": {
+    "preset:blitz|preset:sentinel": 0.5,
+    "preset:sentinel|preset:blitz": 0.5,
+    "preset:blitz|preset:sniper": 0.3,
+    "preset:sniper|preset:blitz": 0.7,
+    "preset:blitz|preset:aggressive": 0.4,
+    "preset:aggressive|preset:blitz": 0.6,
+    "preset:blitz|preset:peaking": 0.0,
+    "preset:peaking|preset:blitz": 1.0,
+    "preset:blitz|preset:ow_proto": 0.0,
+    "preset:ow_proto|preset:blitz": 1.0,
+    "preset:sentinel|preset:sniper": 0.4,
+    "preset:sniper|preset:sentinel": 0.6,
+    "preset:sentinel|preset:aggressive": 0.2,
+    "preset:aggressive|preset:sentinel": 0.8,
+    "preset:sentinel|preset:peaking": 0.0,
+    "preset:peaking|preset:sentinel": 1.0,
+    "preset:sentinel|preset:ow_proto": 0.0,
+    "preset:ow_proto|preset:sentinel": 1.0,
+    "preset:sniper|preset:aggressive": 0.5,
+    "preset:aggressive|preset:sniper": 0.5,
+    "preset:sniper|preset:peaking": 0.1,
+    "preset:peaking|preset:sniper": 0.9,
+    "preset:sniper|preset:ow_proto": 0.0,
+    "preset:ow_proto|preset:sniper": 1.0,
+    "preset:aggressive|preset:peaking": 0.1,
+    "preset:peaking|preset:aggressive": 0.9,
+    "preset:aggressive|preset:ow_proto": 0.0,
+    "preset:ow_proto|preset:aggressive": 1.0,
+    "preset:peaking|preset:ow_proto": 0.0,
+    "preset:ow_proto|preset:peaking": 1.0
+  },
+  "leaderboard": [
+    {
+      "agent": "preset:ow_proto",
+      "elo": 1877.9846199145277,
+      "games": 50,
+      "wins": 50,
+      "draws": 0,
+      "losses": 0
+    },
+    {
+      "agent": "preset:peaking",
+      "elo": 1657.7061401711849,
+      "games": 50,
+      "wins": 38,
+      "draws": 0,
+      "losses": 12
+    },
+    {
+      "agent": "preset:aggressive",
+      "elo": 1450.983661112957,
+      "games": 50,
+      "wins": 20,
+      "draws": 0,
+      "losses": 30
+    },
+    {
+      "agent": "preset:sniper",
+      "elo": 1431.1896722492502,
+      "games": 50,
+      "wins": 19,
+      "draws": 0,
+      "losses": 31
+    },
+    {
+      "agent": "preset:sentinel",
+      "elo": 1304.4600793721352,
+      "games": 50,
+      "wins": 11,
+      "draws": 0,
+      "losses": 39
+    },
+    {
+      "agent": "preset:blitz",
+      "elo": 1277.6758271799451,
+      "games": 50,
+      "wins": 12,
+      "draws": 0,
+      "losses": 38
+    }
+  ],
+  "k_factor": 32.0,
+  "initial_elo": 1500.0
+}

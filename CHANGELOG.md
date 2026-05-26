@@ -2,6 +2,15 @@
 
 All notable project changes should be recorded here.
 
+## 2026-05-26
+
+### Added
+
+- Added `tools/search_params.py` for YAML-based parameter search over strategy presets.
+- Added `search_spaces/ow_proto_core.yaml` as a starter search space for `preset:ow_proto`.
+- Added `search_spaces/peaking_core.yaml` as a starter search space for `preset:peaking`.
+- Added smoke tests and a `make test-search` shortcut for the parameter-search workflow.
+
 ## 2026-05-20
 
 ### Fixed

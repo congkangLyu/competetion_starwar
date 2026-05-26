@@ -1,0 +1,34 @@
+# OW-Proto Defensive Reinforcement Optimization
+#
+# Hypothesis: Improve defensive response by:
+# - Prioritizing fast-arrival reinforcements (higher eta_mult)
+# - Enabling more aggressive defensive reinforcement (lower min threshold)
+#
+# Changes from ow_proto baseline:
+# - formula_eta_mult: 2.0 → 3.0 (prefer quick-arrival targets and reinforcements)
+# - min_ships_mine_attack: 5 → 3 (allow smaller defensive reinforcements)
+#
+# Expected: Better defense against incoming threats, particularly for fast-arrival fleets
+
+name: ow_proto_defensive
+description: |
+  OW-Proto variant optimized for aggressive defensive reinforcement.
+  Increases ETA weight to prioritize fast reinforcements, and lowers
+  minimum ship thresholds for defense to enable quicker response.
+
+agent: OwProtoAgent
+
+config:
+  min_ships_mine_attack: 3
+  min_ships_target_coop_attack: 20
+  coop_planet_cap: 8
+  lookahead_ticks: 60
+  wait_turns: 2
+
+  formula_dist: 100.0
+  formula_prod_mult: 15.0
+  formula_enemy_bonus_mult: 10.0
+  formula_total_ships_percent: 0.7
+  formula_eta_mult: 3.0
+
+  skip_comets: true

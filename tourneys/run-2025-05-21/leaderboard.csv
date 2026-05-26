@@ -1,0 +1,7 @@
+agent,elo,games,wins,draws,losses,winrate
+preset:ow_proto,1877.98,50,50,0,0,1.0000
+preset:peaking,1657.71,50,38,0,12,0.7600
+preset:aggressive,1450.98,50,20,0,30,0.4000
+preset:sniper,1431.19,50,19,0,31,0.3800
+preset:sentinel,1304.46,50,11,0,39,0.2200
+preset:blitz,1277.68,50,12,0,38,0.2400

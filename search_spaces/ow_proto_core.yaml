@@ -1,0 +1,13 @@
+# Small, practical search space for the current ow_proto champion.
+#
+# Start with random sampling, for example:
+#   python tools/search_params.py configs/ow_proto.yaml search_spaces/ow_proto_core.yaml \
+#     --opponent preset:ow_proto --mode random --samples 24 --games 10 -p 4 \
+#     --out runs/search-ow-proto-core
+
+parameters:
+  wait_turns: [1, 2]
+  formula_dist: [70.0, 80.0, 90.0, 100.0]
+  formula_prod_mult: [15.0, 18.0, 22.0, 26.0]
+  formula_total_ships_percent: [0.6, 0.7, 0.8]
+  formula_eta_mult: [1.5, 2.0, 2.5]

@@ -143,6 +143,9 @@ competetion_starwar/
 │   ├── blitz.yaml               # 72.2% baseline(当前提交)
 │   ├── sentinel.yaml            # blitz + 防御增援
 │   └── sniper.yaml              # 朴素最近邻基线
+├── search_spaces/               # tools/search_params.py 使用的参数搜索空间
+│   ├── ow_proto_core.yaml       # ow_proto 冠军策略的起步搜索空间
+│   └── peaking_core.yaml        # peaking 预设的起步搜索空间
 │
 ├── orbit_wars/                  # ── Python 包 ──
 │   ├── __init__.py              # 常用符号 re-export
@@ -164,6 +167,7 @@ competetion_starwar/
 ├── tools/                       # CLI 入口(脚本,不被 import)
 │   ├── build_submission.py      # YAML 预设 -> 单文件 main.py
 │   ├── eval.py                  # 两 agent 本地对战
+│   ├── search_params.py         # 生成并评估参数候选
 │   ├── tournament.py            # N agent round-robin + Elo
 │   ├── viz.py                   # replay JSON -> 交互式 HTML
 │   └── replay.py                # 临时 replay 助手
@@ -175,6 +179,7 @@ competetion_starwar/
 │   ├── smoke_test_build.py
 │   ├── smoke_test_eval.py
 │   ├── smoke_test_metrics.py
+│   ├── smoke_test_search_params.py
 │   ├── smoke_test_viz.py
 │   └── smoke_test_tournament.py
 │
@@ -222,6 +227,29 @@ python tools/eval.py preset:aggressive preset:blitz -n 20 -p 2 -o cmp.jsonl
 JSONL 每行是一局的完整记录,带 `reward`、`winner` 和嵌套的
 `PlayerMetrics`(planets captured/lost、ships lost to sun、peak planets 等)。
 可以直接喂给 `jq` 或 pandas 做分析。
+
+### 批量搜索策略参数
+
+手动改 YAML 太慢时,用 `tools/search_params.py`。它会从基础 preset 出发,
+按搜索空间生成候选参数,把每个候选构建成独立 agent 文件,调用现有评估器
+对战,最后写出按表现排序的结果表。
+
+```bash
+python tools/search_params.py configs/ow_proto.yaml search_spaces/ow_proto_core.yaml \
+  --opponent preset:ow_proto \
+  --mode random \
+  --samples 24 \
+  --games 10 \
+  -p 4 \
+  --seed 20260526 \
+  --out runs/search-ow-proto-core
+```
+
+输出目录包含 `base.yaml`、`search_space.yaml`、生成的候选 YAML、
+构建出的候选 `.py`、每个候选的比赛 JSONL、`results.csv`、
+`results.json`、`best.yaml`,以及保存前几名 YAML 的 `top/` 目录。
+需要完整笛卡尔积搜索时用 `--mode grid`;只想生成候选、不跑比赛时用
+`--dry-run`。
 
 ### 跑 round-robin 锦标赛
 
@@ -422,6 +450,24 @@ python tools/eval.py preset:my_idea preset:blitz -n 50 -p 8 -o cmp.jsonl
 | `--episode-steps` | None | 覆盖 kaggle `episodeSteps`(默认 500) |
 | `-o, --output` | None | 把每局结果写到这里(JSONL) |
 
+### `tools/search_params.py`
+
+| Flag | 默认 | 含义 |
+|---|---|---|
+| `base_config search_space` | — | 基础 preset YAML 和参数搜索空间 YAML |
+| `--opponent` | `preset:ow_proto` | 候选评估时使用的对手 spec |
+| `--mode` | `random` | 候选选择方式:`random` 或 `grid` |
+| `--samples` | None | random 模式的候选数;grid 模式的前 N 个组合 |
+| `--games` | 6 | 每个候选打几局 |
+| `-p, --parallel` | 1 | 每个候选评估时的进程池大小 |
+| `--seed` | None | 候选采样和比赛 seed 的根 seed |
+| `--episode-steps` | None | 可选的 kaggle `episodeSteps` 覆盖,用于快速粗筛 |
+| `--no-balance` | 关 | 不做位置交换 |
+| `--out` | 带时间戳的 `runs/` 目录 | 输出目录 |
+| `--prefix` | 从基础 preset 派生 | 候选名称前缀 |
+| `--top-k` | 5 | 把前 K 名候选 YAML 复制到 `top/` |
+| `--dry-run` | 关 | 只生成候选 YAML/Python 文件,不评估 |
+
 ### `tools/tournament.py`
 
 | Flag | 默认 | 含义 |
@@ -464,7 +510,7 @@ python tools/eval.py preset:my_idea preset:blitz -n 50 -p 8 -o cmp.jsonl
 make help              显示这个列表
 make test              跑全部 7 套 standalone smoke
 make test-core         单独跑一套(把 core 换成 agents/build/eval/
-                          metrics/viz/tournament 任意一个)
+                          metrics/search/viz/tournament 任意一个)
 make pytest            每个 smoke_test_*.py 走 pytest
 make pytest-verbose    pytest 加 -v -s
 
@@ -491,9 +537,10 @@ Windows 没装 `make`?右边对应的命令是等价的,可以直接跑。
 | `smoke_test_build.py` | 32 |  3 | YAML → main.py、built blitz vs 老 main.py parity |
 | `smoke_test_eval.py` | 40 | 10 | Runner、JSONL roundtrip、metrics 集成 |
 | `smoke_test_metrics.py` | 20 |  7 | 在合成 env.steps 上单测 metrics |
+| `smoke_test_search_params.py` | 24 |  5 | 参数搜索生成、排序、CLI dry-run |
 | `smoke_test_viz.py` | 31 | 10 | SVG/HTML 渲染器、replay 加载、CLI |
 | `smoke_test_tournament.py` | 45 | 12 | Round-robin、pairwise WR、Elo |
-| **合计** | **237** | **61** | |
+| **合计** | **261** | **66** | |
 
 说明:
 - "独立 check" 列统计的是 `[OK ]` 行数 —— 真正的断言,grep 失败用。
